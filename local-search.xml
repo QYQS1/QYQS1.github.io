@@ -4,6 +4,33 @@
   
   
   <entry>
+    <title>两进制入门杂谈</title>
+    <link href="/2024/12/27/%E4%B8%A4%E8%BF%9B%E5%88%B6%E5%85%A5%E9%97%A8%E6%9D%82%E8%B0%88/"/>
+    <url>/2024/12/27/%E4%B8%A4%E8%BF%9B%E5%88%B6%E5%85%A5%E9%97%A8%E6%9D%82%E8%B0%88/</url>
+    
+    <content type="html"><![CDATA[]]></content>
+    
+    
+    <categories>
+      
+      <category>基础知识</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>二进制</tag>
+      
+      <tag>伪教程</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>PE文件结构</title>
     <link href="/2024/12/24/PE%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84/"/>
     <url>/2024/12/24/PE%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84/</url>
@@ -19,8 +46,6 @@
     
     
     <tags>
-      
-      <tag>PE</tag>
       
       <tag>re</tag>
       
