@@ -8,12 +8,12 @@
     <link href="/2024/12/27/%E4%B8%A4%E8%BF%9B%E5%88%B6%E5%85%A5%E9%97%A8%E6%9D%82%E8%B0%88/"/>
     <url>/2024/12/27/%E4%B8%A4%E8%BF%9B%E5%88%B6%E5%85%A5%E9%97%A8%E6%9D%82%E8%B0%88/</url>
     
-    <content type="html"><![CDATA[]]></content>
+    <content type="html"><![CDATA[<h1 id="序言"><a href="#序言" class="headerlink" title="序言"></a>序言</h1><p>作为一个两进制新人  毅然决定开始动手写这一篇文章  内容或许(一定)不完善  也会有很多问题  但是更能以一个新人的角度来看待问题  把我(们)曾经踩过的坑复现出来  同时在两进制的主要方向–pwn&#x2F;re的新手部分我都有部分涉及(指AK入门指北)  希望能够帮到大家  同时也算是复习这些知识</p><p>这篇文章将会以一个新手的角度从零开始到至少能在校级比赛上能有输出(<del>指公众号签到</del>)  同时会借鉴大量的我曾看过的文章和大牛博客  以及两进制大家庭各位的帮助</p><h1 id="0x00-Oops"><a href="#0x00-Oops" class="headerlink" title="0x00  Oops!!!"></a>0x00  Oops!!!</h1><p>实话说  这一章是后来才开始写的  主要灵感来源于学长的小趣闻(<del>指期末答辩考察ELF的意义</del>)  突然想起刚进入这个赛道的我的迷茫感  所以  以下对一些常用简称&#x2F;术语进行简介  在之后文章撰写中如果有更多术语会再进行补充:</p><table><thead><tr><th align="center">简称</th><th align="center">全称</th><th align="center">简介</th></tr></thead><tbody><tr><td align="center">CTF</td><td align="center">Capture The Flag</td><td align="center">夺旗赛,从题目中获得flag</td></tr><tr><td align="center">RE</td><td align="center">Reverse</td><td align="center">逆向工程,二进制的一部分</td></tr><tr><td align="center">PWN</td><td align="center">发音类似“砰”，是指攻破设备或者系统</td><td align="center">系统&#x2F;硬件破解,希望成为电视&#x2F;电影中的hacker吗,来跟命令行玩玩吧</td></tr><tr><td align="center">IOT</td><td align="center">Internet of Things</td><td align="center">物联网工程,同样也是二进制学习一部分</td></tr><tr><td align="center">MISC</td><td align="center">miscellaneous</td><td align="center">杂项,简称对脑洞or工具利用题(bushi),两进制刷分好帮手</td></tr><tr><td align="center">Crypto</td><td align="center">Cryptography</td><td align="center">密码学,数学佬狂喜</td></tr><tr><td align="center">WEB</td><td align="center">website</td><td align="center">网站破解,尾部佬YYDS,装逼慎用cmd,请使用F12</td></tr><tr><td align="center">wp</td><td align="center">writeup</td><td align="center">解题思路，题目解题过程的记录,最好分类整理以便填充博客(悲)</td></tr><tr><td align="center">pl</td><td align="center">playload</td><td align="center">（有效攻击负载）是包含在你用于一次漏洞利用中的主要功能代码  pwn✌的调试之路才刚刚开始</td></tr><tr><td align="center">shellcode</td><td align="center">-</td><td align="center">可提权代码(🈲<em>shell</em>craft )</td></tr><tr><td align="center">EXP</td><td align="center">Exploit</td><td align="center">利用，指利用系统漏洞进行攻击的动作</td></tr><tr><td align="center">AK</td><td align="center">all kill</td><td align="center">某一类型题目或者全部题目都被解出  并非AK-47</td></tr><tr><td align="center">一血</td><td align="center">first blood</td><td align="center">通常指比赛中最先得分&#x2F;解出某题  建议double kill</td></tr><tr><td align="center">py</td><td align="center">-</td><td align="center">指比赛中通过非解题手段，从其他渠道或选手处违规获得flag或解题提示(那还能怎么办  某大厂黄色软件一把梭呗)</td></tr></tbody></table><h1 id="0x01-环境搭建-工具安装"><a href="#0x01-环境搭建-工具安装" class="headerlink" title="0x01 环境搭建&amp;&amp;工具安装"></a>0x01 环境搭建&amp;&amp;工具安装</h1><p>(未完待续….)</p>]]></content>
     
     
     <categories>
       
-      <category>基础知识</category>
+      <category>教程(bushi)</category>
       
     </categories>
     
