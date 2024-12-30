@@ -26,12 +26,16 @@
 <meta property="og:site_name" content="QYQS">
 <meta property="og:description" content="序言作为一个两进制新人  毅然决定开始动手写这一篇文章  内容或许(一定)不完善  也会有很多问题  但是更能以一个新人的角度来看待问题  把我(们)曾经踩过的坑复现出来  同时在两进制的主要方向–pwn&#x2F;re的新手部分我都有部分涉及(指AK入门指北)  希望能够帮到大家  同时也算是复习这些知识 这篇文章将会以一个新手的角度从零开始到至少能在校级比赛上能有输出(指公众号签到)  同时会">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://raw.githubusercontent.com/QYQS1/picture/main/test/202412302222501.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/QYQS1/picture/main/test/202412302225340.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/QYQS1/picture/main/test/202412302228606.png">
 <meta property="article:published_time" content="2024-12-27T02:38:09.000Z">
-<meta property="article:modified_time" content="2024-12-27T05:52:37.334Z">
+<meta property="article:modified_time" content="2024-12-30T15:10:43.140Z">
 <meta property="article:author" content="QYQS">
 <meta property="article:tag" content="二进制">
 <meta property="article:tag" content="伪教程">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/QYQS1/picture/main/test/202412302222501.png">
   
   
   
@@ -224,7 +228,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          1.3k 字
+          2.7k 字
         
       </span>
     
@@ -235,7 +239,7 @@
         
         
         
-          11 分钟
+          23 分钟
         
       </span>
     
@@ -364,7 +368,7 @@
 <td align="center">指比赛中通过非解题手段，从其他渠道或选手处违规获得flag或解题提示(那还能怎么办  某大厂黄色软件一把梭呗)</td>
 </tr>
 </tbody></table>
-<h1 id="0x01-简介"><a href="#0x01-简介" class="headerlink" title="0x01 简介"></a>0x01 简介</h1><p>刚开始两进制只需要了解re&#x2F;pwn</p>
+<h1 id="0x00-简介"><a href="#0x00-简介" class="headerlink" title="0x00 简介"></a>0x00 简介</h1><p>刚开始两进制只需要了解re&#x2F;pwn</p>
 <h2 id="什么是逆向工程-RE"><a href="#什么是逆向工程-RE" class="headerlink" title="什么是逆向工程 (RE)"></a>什么是逆向工程 (RE)</h2><blockquote>
 <p>​	《逆向工程》是你即将体验的一款开放世界冒险游戏。该游戏秉持着根据已有的东西和结果，通过分析 来推导出具体的实现方法，包括但不限于：编译后的二进制程序、汇编代码分析、甚至是编译前的代码分析。 游戏设定在一个名为“调试器”的真实工具中，你将扮演一位名为“逆向人”的角色，在自由的代码执行中邂逅 性格各异、能力独特的指令、特性们，与他们一起拿下CTF比赛，找回失散的flag，同时逐步发掘“二进制”的 真相。 </p>
 <p>​	本文讲解的是狭义逆向工程（偏向于CTF比赛），你需要深入分析代码片段&#x2F;二进制文件，获取其中加密 后的一段flag文本并提交到比赛平台，就算你过关! 一般来说，比赛主办方都会给你一个exe(win下的可执行文件)&#x2F;elf(linux下的可执行文件)，还有的会直 接给你.asm(汇编语言文件)或者apk(手机安装包文件)，甚至更离谱的，scratch编程工具的代码文件，不常 见架构的程序（riscv、甚至是上世纪的红白机的文件），你需要有正确的思考能力和肝能力，从史山代码中 提取珠宝，定位正确的地点，从而解决这个问题。</p>
@@ -374,11 +378,62 @@
 <p>Pwn（读作“砰”，拟声词）⼀词起源于⽹络游戏社区，原本表⽰成功⼊侵了计算机系统，在  CTF 中则是⼀种题⽬⽅向：通过构造恶意输⼊达到泄漏信息甚⾄劫持⼏乎整个系统 （getshell）的⽬的。其实在 CTF ⽐赛发展初期，赛题通常只与⼆进制安全相关，因此  Pwn 是 CTF 领域最原始的⽅向。</p>
 </blockquote>
 <p>–摘录自2024moectf入门文档</p>
-<h1 id="0x01-如何渡过期末考试-笑"><a href="#0x01-如何渡过期末考试-笑" class="headerlink" title="0x01 如何渡过期末考试(笑)"></a>0x01 如何渡过期末考试(笑)</h1><p>看着标题或许有点抽象  但是一门适合自己的编程语言无论是对于CTF  ^是(抑或是)平安渡过期末考试都有极其重要的战略意义 </p>
-<p>C语言是重中之重  尤其是对于二进制方面</p>
-<p>期末考试对C语言的要求(或者是对语言的要求)仅仅是模仿</p>
-<p>两进制更需要理解程序底层逻辑</p>
-<p>Python 这种高度封装的语言 你虽然写着非常舒服 但是你不懂它的原理是什么 而我们逆向工程就是要研究这些原理</p>
+<h1 id="PWN-0x01"><a href="#PWN-0x01" class="headerlink" title="PWN-0x01"></a>PWN-0x01</h1><p>解锁本部分请先完成:</p>
+<p>基础:C语言基础  IDA使用基础  简单汇编基础  栈基本了解</p>
+<p><strong>以下内容均建立在对基础知识有所了解的情况下展开  请善用搜索引擎</strong></p>
+<p>在开始整个部分之前  我们先来看一段代码</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span></span><br><span class="hljs-function"></span>&#123;<br>	<span class="hljs-type">int</span> a = <span class="hljs-number">0</span>;<br>	<span class="hljs-type">int</span> input;<br>	<span class="hljs-built_in">scanf_s</span>(<span class="hljs-string">&quot;%d&quot;</span>, &amp;input);<br>	<span class="hljs-keyword">if</span> (input == <span class="hljs-number">666</span>)<br>	&#123;<br>		a = <span class="hljs-number">1</span>;<br>	&#125;<br>	<span class="hljs-keyword">if</span> (a == <span class="hljs-number">1</span>)<br>	&#123;<br>		<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;flag is:FLAG&#123;@Y@S_i5_G0od_R1ght?&#125;&quot;</span>);<br>	&#125;<br>	<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;maybe you can&#x27;t good&quot;</span>);<br>	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>猜数字就给flag  看起来很简单  我们使用IDA打开这段代码编译得到的程序</p>
+<p>main函数长这样:</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><code class="hljs csharp">__int64 __<span class="hljs-function">fastcall <span class="hljs-title">main</span>()</span><br>&#123;<br>  <span class="hljs-built_in">char</span> *v0; <span class="hljs-comment">// rdi</span><br>  __int64 i; <span class="hljs-comment">// rcx</span><br>  <span class="hljs-built_in">char</span> v3; <span class="hljs-comment">// [rsp+20h] [rbp+0h] BYREF</span><br>  <span class="hljs-built_in">int</span> v4; <span class="hljs-comment">// [rsp+24h] [rbp+4h]</span><br>  <span class="hljs-built_in">int</span> v5[<span class="hljs-number">53</span>]; <span class="hljs-comment">// [rsp+44h] [rbp+24h] BYREF</span><br><br>  v0 = &amp;v3;<br>  <span class="hljs-keyword">for</span> ( i = <span class="hljs-number">18</span>i64; i; --i )<br>  &#123;<br>    *(_DWORD *)v0 = <span class="hljs-number">-858993460</span>;<br>    v0 += <span class="hljs-number">4</span>;<br>  &#125;<br>  <br>  <span class="hljs-comment">//这里是内存空间初始化  不管</span><br>  <br>  j___CheckForDebuggerJustMyCode(&amp;_EBC19AA6_FileName_cpp);<br>  <br>  <span class="hljs-comment">//调试器检测  不管</span><br>  <br>  <br>  <span class="hljs-comment">//以下为主要部分</span><br>  v4 = <span class="hljs-number">0</span>;<br>  j_scanf_s(<span class="hljs-string">&quot;%d&quot;</span>, v5);<br>  <span class="hljs-keyword">if</span> ( v5[<span class="hljs-number">0</span>] == <span class="hljs-number">666</span> )<br>    v4 = <span class="hljs-number">1</span>;<br>  <span class="hljs-keyword">if</span> ( v4 == <span class="hljs-number">1</span> )<br>    j_printf(<span class="hljs-string">&quot;flag is:FLAG&#123;@Y@S_i5_G0od_R1ght?&#125;&quot;</span>);<br>  j_printf(<span class="hljs-string">&quot;maybe you can&#x27;t good&quot;</span>);<br>  <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>i64;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>很简单对吧  但是如果我就是逆天  我不想输数字  我就想让程序输出flag  那我们来尝试一种很新的办法</p>
+<p>看汇编(这是二进制必修课  得多看)</p>
+<p><img src="https://raw.githubusercontent.com/QYQS1/picture/main/test/202412302222501.png" srcset="/img/loading.gif" lazyload alt="QQ_1735568080338"></p>
+<p> <strong>这里我提供的是完全没必要的方法  只是为了进行引入而已  实际问题请勿模仿</strong></p>
+<p>我们施展一点小技巧(以后会写的)</p>
+<p><img src="https://raw.githubusercontent.com/QYQS1/picture/main/test/202412302225340.png" srcset="/img/loading.gif" lazyload alt="QQ_1735568745881"></p>
+<p>当我们再次运行时会直接jmp(无条件跳转)到loc_1400119EC也就是输出flag的地方  </p>
+<p>实际上  我们这里的想法就是  更改字节码  设置了一个jmp到达指定地址  来实现了任意地址跳转(该行中E9代表长跳转jmp 后跟相对偏移  不细细展开  re部分会提到) 如果到这里为止你都没有问题  那么恭喜你  你成功领悟到了Inline hook的真谛(开个玩笑  当然对这个名词会很陌生  同样是re部分的内容)</p>
+<p>运行实例(跳过了输入部分):</p>
+<p><img src="https://raw.githubusercontent.com/QYQS1/picture/main/test/202412302228606.png" srcset="/img/loading.gif" lazyload alt="QQ_1735568895751"></p>
+<p>我们成功跳过了输入部分 并且得到了flag</p>
+<p><strong>这里其实是完全大费周章的操作  并且似乎与pwn没有任何关系</strong>  </p>
+<p>那我们再思考一下以下代码:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">fuc</span><span class="hljs-params">(<span class="hljs-type">int</span> a)</span></span><br><span class="hljs-function"></span>&#123;<br>	<span class="hljs-keyword">if</span> (a == <span class="hljs-number">1</span>)<br>	&#123;<br>		<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;flag is:FLAG&#123;@Y@S_i5_G0od_R1ght?&#125;&quot;</span>);<br>	&#125;<br>&#125;<br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span></span><br><span class="hljs-function"></span>&#123;<br>	<span class="hljs-type">int</span> a = <span class="hljs-number">0</span>;<br>	<span class="hljs-type">int</span> input;<br>	<span class="hljs-built_in">scanf_s</span>(<span class="hljs-string">&quot;%d&quot;</span>, &amp;input);<br>	<span class="hljs-keyword">if</span> (input == <span class="hljs-number">666</span>)<br>	&#123;<br>		a = <span class="hljs-number">1</span>;<br>	&#125;<br>	<span class="hljs-built_in">fuc</span>(a);<br>	<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;maybe you can&#x27;t good&quot;</span>);<br>	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>基本实现没有变化  只是拆成了两个函数  那么在IDA里的体现应该是什么呢?</p>
+<p>main函数:</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs csharp">__int64 __<span class="hljs-function">fastcall <span class="hljs-title">main</span>()</span><br>&#123;<br>  <span class="hljs-built_in">char</span> *v0; <span class="hljs-comment">// rdi</span><br>  __int64 i; <span class="hljs-comment">// rcx</span><br>  <span class="hljs-built_in">char</span> v3; <span class="hljs-comment">// [rsp+20h] [rbp+0h] BYREF</span><br>  <span class="hljs-built_in">int</span> a; <span class="hljs-comment">// [rsp+24h] [rbp+4h]</span><br>  <span class="hljs-built_in">int</span> v5[<span class="hljs-number">53</span>]; <span class="hljs-comment">// [rsp+44h] [rbp+24h] BYREF</span><br><br>  v0 = &amp;v3;<br>  <span class="hljs-keyword">for</span> ( i = <span class="hljs-number">18</span>i64; i; --i )<br>  &#123;<br>    *(_DWORD *)v0 = <span class="hljs-number">-858993460</span>;<br>    v0 += <span class="hljs-number">4</span>;<br>  &#125;<br>  j___CheckForDebuggerJustMyCode(&amp;_EBC19AA6_FileName_cpp);<br>  <br> <span class="hljs-comment">//以下为正文部分:</span><br>  a = <span class="hljs-number">0</span>;<br>  j_scanf_s(<span class="hljs-string">&quot;%d&quot;</span>, v5);<br>  <span class="hljs-keyword">if</span> ( v5[<span class="hljs-number">0</span>] == <span class="hljs-number">666</span> )<br>    a = <span class="hljs-number">1</span>;<br>  fuc(a);<br>  j_printf(<span class="hljs-string">&quot;maybe you can&#x27;t good&quot;</span>);<br>  <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>i64;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>区别无非就是main函数里多了个fuc函数的调用  那么如果按照刚刚的思路  我们只需要同样的构造jmp+地址的形式就能实现任意跳转</p>
+<p>读到这里  实际上你已经对<strong>ret2text</strong>有部分了解了  或许你很迷茫  什么是ret2text  那么接着往下看</p>
+<p>事实上  以上所有的操作都是基于本地运行  我们拥有源代码并能随意改写得到的结果  但是在pwn题中都是远程环境  执行的都是远程环境中的程序  就算我们在本地修改了jmp  在远程环境中也不会有任何作用  那么我们之前大费周章的讲那么多都是没用的吗？？ </p>
+<p>其实不然  对基础的ret2text题目来说你会发现几个与刚刚例子中相同的特点</p>
+<p>请仔细回忆刚刚的程序  我们的目标就是需要程序输出flag  需要输出的flag以及”printf”语句不是我们用户写出来的吧  而是程序已经给出的  尤其是像第二个例子  那么在pwn题目中  <strong>大部分</strong>时候我们的目标是打开一个shell 那么打开这个shell的操作也应当是程序中给出的</p>
+<p>所以:</p>
+<p><strong>1.题目中给出了backdoor(例如第二个程序中的fuc()函数,或是pwn题中给的一个从未被调用但是能打开shell的函数)</strong></p>
+<p>第一点中我提到了  shell打开的函数是从未被调用的  那么我们应该怎么样去打开这个shell呢</p>
+<p>实际上我们只需要调用这个backdoor函数  我们应该如何调用呢  没错  像刚刚的第二个示例一样  我们只需要jmp到目标函数所在地址(例如第二个程序的fuc所在地址)</p>
+<p><strong>2.目标:jmp到能打开shell或是cat flag的函数</strong></p>
+<p>问题又来了  我们刚刚说过了  题目是在远程环境运行的  根本不能像我们刚刚那样自己写一个jmp上去  所以我们需要利用程序中现有的”jmp”指令</p>
+<p>让我们来猜猜为什么这个方法要叫ret2text(ret to text)</p>
+<p>text实际上指的是text段  指的是程序中已经定义好的代码  也就是我们的第一点  题目给出了定义好的backdoor函数</p>
+<p>ret呢</p>
+<p>熟悉汇编的小伙伴都知道</p>
+<p>通过一种<strong>不严谨</strong>的方式来说</p>
+<p>ret&#x3D;pop+jmp</p>
+<p>以第二个程序为例</p>
+<p>当main函数调用fuc函数时  会将下一条指令的返回地址压入栈中  而ret可以视为rip&#x3D;返回地址+jmp到rip所指向的地址</p>
+<p>这里似乎凑齐了我们需要的剩下两个要素</p>
+<p><strong>3.ret+控制返回地址</strong></p>
+<p>基于以上三点  我们似乎就能够完成调用backdoor函数的任务了  我们的目标就是在ret时返回的是我们所指定的返回地址就好了</p>
+<p>想要控制返回地址  我们就需要用到栈溢出原理</p>
+<p><strong>(以下内容请学习栈,栈帧的结构后食用)</strong></p>
+<p>我们刚刚提到过  返回地址在调用函数时会被压入栈中我们只需要控制栈就能控制返回地址</p>
+<p>栈上有些什么呢??  排放顺序如何呢??</p>
+<p><strong>思考ing</strong></p>
 <p>(未完待续….)</p>
 
                 
