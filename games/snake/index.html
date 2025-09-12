@@ -17,7 +17,7 @@
             position: relative;
             width: 400px;
             height: 400px;
-            margin: 10px auto;
+            margin: 0 auto;
         }
         #game-board {
             background-color: #000;
@@ -36,15 +36,11 @@
             height: 100%;
             background: rgba(0, 0, 0, 0.7);
             color: white;
-            display: flex; /* 改为 flex 以便控制显示 */
+            display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             font-size: 24px;
-            z-index: 10;
-        }
-        .hidden {
-            display: none; /* 用于隐藏遮罩层 */
         }
         #overlay-message { margin-bottom: 20px; }
         #start-btn {
@@ -75,64 +71,76 @@
     <div id="instructions">使用方向键 (↑ ↓ ← →) 控制</div>
 
     <script>
-        // DOM Elements
         const board = document.getElementById('game-board');
         const scoreElement = document.getElementById('score');
         const startBtn = document.getElementById('start-btn');
         const overlay = document.getElementById('overlay');
         const overlayMessage = document.getElementById('overlay-message');
 
-        // Game Constants
-        const GRID_SIZE = 20;
-        const INITIAL_SPEED = 200;
+        const gridSize = 20;
+        let snake, food, direction, score, gameOver, gameSpeed, gameLoop;
+        let gameStarted = false;
 
-        // Game State Variables
-        let snake, food, direction, score, gameSpeed, gameLoopInterval;
-        let gameRunning = false;
-
-        // --- Core Game Logic ---
-
-        function gameTick() {
-            if (!gameRunning) return;
-
-            moveSnake();
-
-            if (checkCollision()) {
-                endGame();
-            } else {
-                updateBoard();
-            }
+        function initGame() {
+            snake = [{ x: 10, y: 10 }];
+            food = {};
+            direction = 'right';
+            score = 0;
+            gameOver = false;
+            gameSpeed = 200;
+            scoreElement.textContent = `得分: ${score}`;
+            placeFood();
+            clearBoard();
+            drawSnake();
+            drawFood();
         }
 
         function startGame() {
-            gameRunning = true;
-            overlay.classList.add('hidden'); // 隐藏遮罩层
-
-            // Reset game state
-            snake = [{ x: 10, y: 10 }];
-            direction = 'right';
-            score = 0;
-            gameSpeed = INITIAL_SPEED;
-            updateScore();
-            placeFood();
-            
-            // Start the game loop
-            gameLoopInterval = setInterval(gameTick, gameSpeed);
+            gameStarted = true;
+            overlay.style.display = 'none';
+            initGame();
+            gameLoop = setInterval(main, gameSpeed);
         }
-
-        function endGame() {
-            gameRunning = false;
-            clearInterval(gameLoopInterval); // 停止游戏循环
-            
-            overlayMessage.textContent = `游戏结束! 得分: ${score}`;
-            startBtn.textContent = '重新开始';
-            overlay.classList.remove('hidden'); // 显示遮罩层
+        
+        function main() {
+            if (gameOver) {
+                clearInterval(gameLoop);
+                gameStarted = false;
+                overlayMessage.textContent = `游戏结束! 得分: ${score}`;
+                startBtn.textContent = '重新开始';
+                overlay.style.display = 'flex';
+                return;
+            }
+            moveSnake();
+            if (!gameOver) { // Re-check after moving
+                clearBoard();
+                drawFood();
+                drawSnake();
+            }
         }
+        
+        function clearBoard() { board.innerHTML = ''; }
 
-        // --- Snake and Board Management ---
+        function drawSnake() {
+            snake.forEach(segment => {
+                const el = document.createElement('div');
+                el.style.gridRowStart = segment.y;
+                el.style.gridColumnStart = segment.x;
+                el.classList.add('snake');
+                board.appendChild(el);
+            });
+        }
+        
+        function drawFood() {
+            const el = document.createElement('div');
+            el.style.gridRowStart = food.y;
+            el.style.gridColumnStart = food.x;
+            el.classList.add('food');
+            board.appendChild(el);
+        }
 
         function moveSnake() {
-            const head = { ...snake[0] }; // Copy the head
+            const head = { ...snake[0] };
             switch (direction) {
                 case 'up': head.y--; break;
                 case 'down': head.y++; break;
@@ -141,95 +149,51 @@
             }
             snake.unshift(head);
 
-            // Check for food
             if (head.x === food.x && head.y === food.y) {
                 score++;
-                updateScore();
+                scoreElement.textContent = `得分: ${score}`;
                 placeFood();
+                // Speed up logic could be added here
             } else {
-                snake.pop(); // Remove tail
+                snake.pop();
             }
+            checkCollision();
         }
-
+        
         function checkCollision() {
             const head = snake[0];
-            // Wall collision
-            if (head.x < 1 || head.x > GRID_SIZE || head.y < 1 || head.y > GRID_SIZE) {
-                return true;
+            if (head.x < 1 || head.x > gridSize || head.y < 1 || head.y > gridSize) {
+                gameOver = true;
             }
-            // Self collision
             for (let i = 1; i < snake.length; i++) {
                 if (head.x === snake[i].x && head.y === snake[i].y) {
-                    return true;
+                    gameOver = true;
                 }
             }
-            return false;
         }
 
         function placeFood() {
-            food = {
-                x: Math.floor(Math.random() * GRID_SIZE) + 1,
-                y: Math.floor(Math.random() * GRID_SIZE) + 1
-            };
-            // Ensure food doesn't spawn on the snake
-            for (const segment of snake) {
-                if (segment.x === food.x && segment.y === food.y) {
-                    placeFood(); // Recursively find a new spot
-                    return;
-                }
-            }
-        }
-
-        // --- Drawing and UI ---
-
-        function updateBoard() {
-            board.innerHTML = ''; // Clear previous state
-            drawElement(food, 'food');
-            snake.forEach(segment => drawElement(segment, 'snake'));
-        }
-
-        function drawElement(pos, className) {
-            const el = document.createElement('div');
-            el.style.gridRowStart = pos.y;
-            el.style.gridColumnStart = pos.x;
-            el.classList.add(className);
-            board.appendChild(el);
+            food.x = Math.floor(Math.random() * gridSize) + 1;
+            food.y = Math.floor(Math.random() * gridSize) + 1;
         }
         
-        function updateScore() {
-            scoreElement.textContent = `得分: ${score}`;
-        }
-        
-        // --- Event Handlers ---
-
-        function handleKeyPress(e) {
-            if (!gameRunning) return;
-
-            const key = e.key;
-            const goingUp = direction === 'up';
-            const goingDown = direction === 'down';
-            const goingLeft = direction === 'left';
-            const goingRight = direction === 'right';
-
-            // Prevent page scrolling with arrow keys during the game
-            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key)) {
+        document.addEventListener('keydown', e => {
+            if (!gameStarted) return;
+            // Prevent page scroll
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
                 e.preventDefault();
             }
-
-            if (key === 'ArrowUp' && !goingDown) direction = 'up';
-            else if (key === 'ArrowDown' && !goingUp) direction = 'down';
-            else if (key === 'ArrowLeft' && !goingRight) direction = 'left';
-            else if (key === 'ArrowRight' && !goingLeft) direction = 'right';
-        }
-
-        // --- Initialization ---
+            
+            switch (e.key) {
+                case 'ArrowUp': if (direction !== 'down') direction = 'up'; break;
+                case 'ArrowDown': if (direction !== 'up') direction = 'down'; break;
+                case 'ArrowLeft': if (direction !== 'right') direction = 'left'; break;
+                case 'ArrowRight': if (direction !== 'left') direction = 'right'; break;
+            }
+        });
 
         startBtn.addEventListener('click', startGame);
-        document.addEventListener('keydown', handleKeyPress);
-        
-        // Draw the initial empty board on page load
-        board.innerHTML = ''; 
-
+        initGame(); // Initial draw before starting
     </script>
 </body>
 </html>
