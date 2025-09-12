@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>贪吃蛇</title>
+    <style>
+        body {
+            background-color: #333;
+            color: #eee;
+            font-family: 'Courier New', Courier, monospace;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #game-board {
+            background-color: #000;
+            border: 2px solid #555;
+            display: grid;
+            grid-template-rows: repeat(20, 1fr);
+            grid-template-columns: repeat(20, 1fr);
+        }
+        .snake { background-color: #0f0; }
+        .food { background-color: #f00; }
+        #score { font-size: 1.5em; margin-top: 10px; }
+        #instructions { font-size: 0.9em; margin-top: 5px; color: #aaa; }
+    </style>
+</head>
+<body>
+    <h1>贪吃蛇</h1>
+    <div id="game-board" style="width: 400px; height: 400px;"></div>
+    <div id="score">得分: 0</div>
+    <div id="instructions">使用方向键 (↑ ↓ ← →) 控制</div>
+
+    <script>
+        const board = document.getElementById('game-board');
+        const scoreElement = document.getElementById('score');
+        const gridSize = 20;
+        let snake = [{ x: 10, y: 10 }];
+        let food = {};
+        let direction = 'right';
+        let score = 0;
+        let gameOver = false;
+        let gameSpeed = 200;
+
+        function main() {
+            if (gameOver) {
+                alert(`游戏结束! 你的得分是: ${score}`);
+                resetGame();
+                return;
+            }
+            setTimeout(() => {
+                clearBoard();
+                drawFood();
+                moveSnake();
+                drawSnake();
+                main();
+            }, gameSpeed);
+        }
+        
+        function resetGame() {
+            snake = [{ x: 10, y: 10 }];
+            direction = 'right';
+            score = 0;
+            scoreElement.textContent = `得分: ${score}`;
+            gameOver = false;
+            placeFood();
+            main();
+        }
+
+        function clearBoard() {
+            board.innerHTML = '';
+        }
+
+        function drawSnake() {
+            snake.forEach(segment => {
+                const snakeElement = document.createElement('div');
+                snakeElement.style.gridRowStart = segment.y;
+                snakeElement.style.gridColumnStart = segment.x;
+                snakeElement.classList.add('snake');
+                board.appendChild(snakeElement);
+            });
+        }
+        
+        function drawFood() {
+            const foodElement = document.createElement('div');
+            foodElement.style.gridRowStart = food.y;
+            foodElement.style.gridColumnStart = food.x;
+            foodElement.classList.add('food');
+            board.appendChild(foodElement);
+        }
+
+        function moveSnake() {
+            const head = { x: snake[0].x, y: snake[0].y };
+            switch (direction) {
+                case 'up': head.y--; break;
+                case 'down': head.y++; break;
+                case 'left': head.x--; break;
+                case 'right': head.x++; break;
+            }
+            snake.unshift(head);
+
+            if (head.x === food.x && head.y === food.y) {
+                score++;
+                scoreElement.textContent = `得分: ${score}`;
+                if (gameSpeed > 50) gameSpeed -= 5;
+                placeFood();
+            } else {
+                snake.pop();
+            }
+            
+            checkCollision();
+        }
+        
+        function checkCollision() {
+            const head = snake[0];
+            if (head.x < 1 || head.x > gridSize || head.y < 1 || head.y > gridSize) {
+                gameOver = true;
+            }
+            for (let i = 1; i < snake.length; i++) {
+                if (head.x === snake[i].x && head.y === snake[i].y) {
+                    gameOver = true;
+                }
+            }
+        }
+
+        function placeFood() {
+            food.x = Math.floor(Math.random() * gridSize) + 1;
+            food.y = Math.floor(Math.random() * gridSize) + 1;
+        }
+        
+        document.addEventListener('keydown', e => {
+            switch (e.key) {
+                case 'ArrowUp': if (direction !== 'down') direction = 'up'; break;
+                case 'ArrowDown': if (direction !== 'up') direction = 'down'; break;
+                case 'ArrowLeft': if (direction !== 'right') direction = 'left'; break;
+                case 'ArrowRight': if (direction !== 'left') direction = 'right'; break;
+            }
+        });
+
+        placeFood();
+        main();
+    </script>
+</body>
+</html>
